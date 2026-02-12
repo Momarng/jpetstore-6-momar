@@ -1,0 +1,19 @@
+name: SonarQube Scan
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  sonar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: SonarQube Scan
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=jpetstore-6-momar \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://192.168.163.129:9000 \
+            -Dsonar.login=$SONAR_TOKEN
