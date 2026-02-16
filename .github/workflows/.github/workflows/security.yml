@@ -1,0 +1,40 @@
+name: Security Pipeline - SonarQube + Trivy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      # --- Analyse SonarQube ---
+      - name: SonarQube Scan
+        run: |
+          sonar-scanner \
+            -Dsonar.projectKey=jpetstore-6-momar \
+            -Dsonar.sources=. \
+            -Dsonar.host.url=http://<IP_VMWARE>:9000 \
+            -Dsonar.login=$SONAR_TOKEN
+        env:
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+
+      # --- Build Docker image ---
+      - name: Build Docker image
+        run: |
+          docker build -t jpetstore-app .
+
+      # --- Analyse Trivy ---
+      - name: Trivy Scan (Docker Image)
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: 'jpetstore-app'
+          format: 'table'
+          exit-code: '0'
+          ignore-unfixed: true
